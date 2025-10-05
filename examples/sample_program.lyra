@@ -1,0 +1,7 @@
+#show
+#run_translated
+
+function greet with parameter name:
+    print "Hello, " + name
+
+greet with "World"
