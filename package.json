@@ -1,26 +1,70 @@
 {
   "name": "lyra-language",
   "displayName": "Lyra Language",
-  "description": "Execute Lyra files and translate to Python using GROQ API",
-  "version": "0.1.0",
-  "publisher": "VIGARPAST-777-2",
+  "description": "Execute Lyra files directly in VS Code using the integrated interpreter.",
+  "version": "0.5.1",
+  "publisher": "VIGARPAST777",
+  "icon": "assets/logo.png",
   "engines": {
-    "vscode": "^1.70.0"
+    "vscode": "^1.75.0"
   },
-  "categories": ["Other"],
-  "activationEvents": ["onCommand:lyra.runFile"],
+  "categories": ["Programming Languages"],
+  "activationEvents": [
+    "onCommand:lyra.runFile",
+    "onLanguage:lyra"
+  ],
   "main": "./extension.js",
   "contributes": {
+    "languages": [
+      {
+        "id": "lyra",
+        "aliases": ["Lyra"],
+        "extensions": [".lyra", ".lyra.txt"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
     "commands": [
       {
         "command": "lyra.runFile",
         "title": "Run Lyra File"
       }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "Lyra Configuration",
+      "properties": {
+        "lyra.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "Your GROQ API key to run Lyra files"
+        }
+      }
+    },
+    "debuggers": [
+      {
+        "type": "lyra",
+        "label": "Lyra Debug",
+        "program": "${workspaceFolder}/src/lyra_interpreter.py",
+        "runtime": "python",
+        "args": ["${file}", "${config:lyra.apiKey}"],
+        "configurationAttributes": {
+          "launch": {
+            "required": ["program"],
+            "properties": {
+              "program": {
+                "type": "string",
+                "description": "Lyra file to run"
+              }
+            }
+          }
+        },
+        "languages": ["lyra"]
+      }
     ]
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile"
+    "vscode:prepublish": "echo Prepublish check",
+    "package": "vsce package"
   },
-  "devDependencies": {},
   "dependencies": {}
 }

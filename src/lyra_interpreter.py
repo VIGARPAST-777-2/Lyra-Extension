@@ -3,12 +3,16 @@ import subprocess
 import sys
 import requests
 import re
+import io
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 if len(sys.argv) < 3:
-    print("❌ API key not provided. Configure your API key in the VS Code extension settings.")
+    print("Usage: python lyra_interpreter.py <file.lyra> <API_KEY>")
     sys.exit(1)
 
+file_path = sys.argv[1]
 api_key = sys.argv[2]
+
 API_BASE = "https://api.groq.com/openai/v1"
 
 def gpt_translate_file(content: str) -> str:
@@ -36,13 +40,12 @@ Lyra program:
     response.raise_for_status()
     answer = response.json()["choices"][0]["message"]["content"]
     answer = re.sub(r"```(?:python)?\n(.*?)```", r"\1", answer, flags=re.DOTALL)
-
     allowed_chars = (
         "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
         "*/.,!\"§$%_()-`?@#~;:+&|^'=" " \n"
     )
     pattern = f"[^{re.escape(allowed_chars)}]"
-    return re.sub(pattern, '', answer).strip()
+    return re.sub(pattern, "", answer).strip()
 
 def execute_python(code: str):
     context = {}
@@ -57,29 +60,18 @@ def run_lyra_file(file_path: str):
         raise FileNotFoundError(f"File not found: {file_path}")
 
     content = path.read_text(encoding="utf-8")
-    show_translation = "#show" in content
-    run_translated = "#run_translated" in content
-
-    if show_translation:
-        print("🟢 Showing Python translation in console.\n")
-    if run_translated:
-        print("⚙️ Automatic execution of translated file enabled.\n")
-
-    print("🔄 Translating entire file at once...")
+    print("🔄 Translating Lyra file...")
     translated_code = gpt_translate_file(content)
 
-    if show_translation:
-        print("🧠 Lyra → Python:\n")
-        print(translated_code)
+    print("🧠 Lyra → Python:\n")
+    print(translated_code)
 
     output_file = Path("translated.py")
     output_file.write_text(translated_code, encoding="utf-8")
     print(f"\n💾 Translated code saved to: {output_file.absolute()}")
 
-    if run_translated:
-        print("\n🚀 Running translated.py...\n")
-        subprocess.run([sys.executable, str(output_file)])
+    print("\n🚀 Running translated.py...\n")
+    subprocess.run([sys.executable, str(output_file)])
 
 if __name__ == "__main__":
-    lyra_file = sys.argv[1]
-    run_lyra_file(lyra_file)
+    run_lyra_file(file_path)

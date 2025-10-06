@@ -1,41 +1,55 @@
 const vscode = require('vscode');
+const { exec } = require('child_process');
 const path = require('path');
-const cp = require('child_process');
 
 function activate(context) {
     let disposable = vscode.commands.registerCommand('lyra.runFile', function () {
-        let editor = vscode.window.activeTextEditor;
+        const editor = vscode.window.activeTextEditor;
         if (!editor) {
-            vscode.window.showErrorMessage("No Lyra file open.");
+            vscode.window.showErrorMessage('No active Lyra file found.');
             return;
         }
 
-        let filePath = editor.document.fileName;
-        if (!filePath.endsWith(".lyra")) {
-            vscode.window.showErrorMessage("This is not a Lyra file.");
+        const doc = editor.document;
+        const ext = path.extname(doc.fileName).toLowerCase();
+        if (ext !== '.lyra' && ext !== '.lyra.txt') {
+            vscode.window.showErrorMessage('Please open a .lyra or .lyra.txt file.');
             return;
         }
 
-        let apiKey = vscode.workspace.getConfiguration('lyra').get('apiKey');
-        if (!apiKey) {
-            vscode.window.showErrorMessage("Please configure your GROQ API key in settings.");
+        const filePath = doc.fileName;
+        const config = vscode.workspace.getConfiguration('lyra');
+        const apiKey = config.get('apiKey');
+
+        if (!apiKey || apiKey.trim() === '') {
+            vscode.window.showErrorMessage(
+                'GROQ API key not configured. Go to Settings -> Extensions -> Lyra -> API Key and enter your key.'
+            );
             return;
         }
 
-        vscode.window.showInformationMessage("Running Lyra interpreter...");
+        // Ejecutar intérprete
+        const interpreterPath = path.join(context.extensionPath, 'src', 'lyra_interpreter.py');
+        const cmd = `python "${interpreterPath}" "${filePath}" "${apiKey}"`;
 
-        // Ejecutar el intérprete de Python
-        let pyInterpreter = path.join(__dirname, 'src', 'lyra_interpreter.py');
-        let command = `python "${pyInterpreter}" "${filePath}" "${apiKey}"`;
-
-        cp.exec(command, (err, stdout, stderr) => {
-            if (err) {
-                vscode.window.showErrorMessage(`Error: ${stderr}`);
-                return;
+        vscode.window.withProgress(
+            { location: vscode.ProgressLocation.Notification, title: 'Running Lyra file...' },
+            (progress) => {
+                return new Promise((resolve) => {
+                    exec(cmd, (error, stdout, stderr) => {
+                        if (error) {
+                            vscode.window.showErrorMessage(`Error running Lyra file: ${stderr || error.message}`);
+                        } else {
+                            vscode.window.showInformationMessage('Lyra file executed successfully.');
+                            const outputChannel = vscode.window.createOutputChannel('Lyra');
+                            outputChannel.show(true);
+                            outputChannel.appendLine(stdout);
+                        }
+                        resolve();
+                    });
+                });
             }
-            vscode.window.showInformationMessage("Lyra file executed successfully. See output console.");
-            console.log(stdout);
-        });
+        );
     });
 
     context.subscriptions.push(disposable);
