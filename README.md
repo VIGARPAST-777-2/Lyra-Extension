@@ -1,8 +1,11 @@
 # Lyra Language Extension for VS Code
 
-**Version:** 0.5.1
+**Version:** 0.5.2
+
 **Publisher:** VIGARPAST777
+
 **GitHub:** [VIGARPAST_777-2](https://github.com/VIGARPAST-777-2)
+
 **Marketplace URL:** [Lyra Language on VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=VIGARPAST777.lyra-language)
 
 ---
