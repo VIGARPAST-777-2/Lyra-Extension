@@ -18,7 +18,7 @@ API_BASE = "https://api.groq.com/openai/v1"
 def gpt_translate_file(content: str) -> str:
     prompt = f"""
 You are a Lyra interpreter.
-Convert the following complete program written in Lyra into executable Python code, and the libraries that you import with 'import', which are external Python libraries, you must install them using the 'subprocess' library, and its corresponding command..
+Convert the following complete program written in Lyra into executable Python code, and the libraries that you import with 'import', which are external Python libraries, you must install them using the 'subprocess' library, and its corresponding command, because them are probably not installed, and 'pip' cannot be used.
 Return ONLY the Python code, without any explanations or extra text.
 
 Lyra program:
