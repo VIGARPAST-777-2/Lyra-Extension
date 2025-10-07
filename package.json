@@ -2,7 +2,7 @@
   "name": "lyra-language",
   "displayName": "Lyra Language",
   "description": "Execute Lyra files directly in VS Code using the integrated interpreter.",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "publisher": "VIGARPAST777",
   "icon": "assets/logo.png",
   "engines": {
